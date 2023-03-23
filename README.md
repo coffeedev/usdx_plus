@@ -1,3 +1,19 @@
+# MODIFICATIONS DONE BY VU3GWN
+
+Changes (settings defaults changed)
+
+1. Updated uSDX to VU3GWN
+2. s-meter : "S" 
+3. CW tone : 700 
+4. Keyer speed : 10 
+5. Keyer mode : Iambic B 
+6. Keyer swap : On (Thumb - Dah, Index - Dit)
+7. CQ message : VU3GWN
+8. PA Bias : 0 & 128
+9. Ref freq : 27000000 
+
+------------------------------------------------------------------------------------------------------
+
 # uSDX: micro Software Defined Transceiver
 uSDX is a simple and experimental (Class-E driven) SSB and CW SDR transceiver. It can be used to make QRP SSB contacts, or (in combination with a PC) used for the digital modes such as FT8, JS8, FT4. It can be fully-continuous tuned through bands 80m-10m in the LSB/USB-modes with a 2400Hz bandwidth has up to 5W PEP SSB output and features a software-based full Break-In VOX for fast RX/TX switching in voice and digital operations.
 

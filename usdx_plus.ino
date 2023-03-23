@@ -1,16 +1,30 @@
 //  QCX-SSB.ino - https://github.com/threeme3/QCX-SSB
 //
 //  Copyright 2019, 2020, 2021   Guido PE1NNZ <pe1nnz@amsat.org>
-//
+// Modifications by VU3GWN - 20230324
 //  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+/*
+ * UNO SIDE
+ * 10 - ORANGE - RESET
+ * 11 - YELLOW - MOSI
+ * 12 - GREEN - MISO
+ * 13 - BLUE - SCK
+ * GND - PURPLE - GND
+ * 
+ * USDX - FROM DISPLAY SIDE
+ * EMPTY, YELLOW, PURPLE
+ * GREEN, BLUE, ORANGE
+ * 
+ * /
+*/
 
 #define VERSION   "1.02x"
-
+//VU3GWN
 // Configuration switches; remove/add a double-slash at line-start to enable/disable a feature; to save space disable e.g. CAT, DIAG, KEYER
 #define DIAG             1   // Hardware diagnostics on startup (only disable when your rig is working)
 #define KEYER            1   // CW keyer
 #define CAT              1   // CAT-interface
-#define F_XTAL    27005000   // 27MHz SI5351 crystal
+#define F_XTAL    27000000   // 27MHz SI5351 crystal
 //#define F_XTAL  25004000   // 25MHz SI5351 crystal  (enable for WB2CBA-uSDX, SI5351 break-out board or uSDXDuO)
 //#define F_XTAL  25000000   // 25MHz SI5351 crystal  (enable for 25MHz TCXO)
 //#define SWAP_ROTARY    1   // Swap rotary direction (enable for WB2CBA-uSDX)
@@ -39,7 +53,7 @@
 #define RIT_ENABLE       1   // Receive-In-Transit alternates the receiving frequency with an user-defined offset to compensate for any necessary tuning needed on receive
 #define VOX_ENABLE       1   // Voice-On-Xmit which is switching the transceiver into transmit as soon audio is detected (above noise gate level)
 //#define MOX_ENABLE     1   // Monitor-On-Xmit which is audio monitoring on speaker during transmit
-//#define FAST_AGC       1   // Adds fast AGC option (good for CW)
+#define FAST_AGC       1   // Adds fast AGC option (good for CW)
 //#define VSS_METER      1   // Supports Vss measurement (as s-meter option), requires resistor of 1M between 12V and pin 26 (PC3)
 //#define SWR_METER      1   // Supports SWR meter with bridge on A6/A7 (LQPF ATMEGA328P) by Alain, K1FM, see: https://groups.io/g/ucx/message/6262 and https://groups.io/g/ucx/message/6361
 //#define ONEBUTTON      1   // Use single (encoder) button to control full the rig; optionally use L/R buttons to completely replace rotory encoder function
@@ -57,6 +71,7 @@
 //#define F_XTAL  20000000   // Enable this for uSDXDuO, 20MHz SI5351 crystal
 //#define TX_CLK0_CLK1   1   // Enable this for uSDXDuO, i.e. when PA is driven by CLK0, CLK1 (not CLK2); NTX pin may be used for enabling the TX path (this is like RX pin, except that RX may also be used as attenuator)
 //#define F_CLK2  12000000   // Enables a fixed CLK2 clock output of choice (only applicable when TX_CLK0_CLK1 is enabled), e.g. for up-converter or to clock UART USB device
+//#define FILTER_700HZ   1
 
 // QCX pin defintions
 #define LCD_D4  0         //PD0    (pin 2)
@@ -222,12 +237,12 @@ uint8_t _digitalRead(uint8_t pin){  // reads pin or (via CAT) artificially overr
 #define IAMBICA  0x00     // 0 for Iambic A, 1 for Iambic B
 #define SINGLE   2        // Keyer Mode 0 1 -> Iambic2  2 ->SINGLE
 
-int keyer_speed = 25;
+int keyer_speed = 10;
 static unsigned long ditTime;                    // No. milliseconds per dit
 static uint8_t keyerControl;
 static uint8_t keyerState;
-static uint8_t keyer_mode = 2; //->  SINGLE
-static uint8_t keyer_swap = 0; //->  DI/DAH
+static uint8_t keyer_mode = 1; //->  IAMBICB
+static uint8_t keyer_swap = 1; //->  DI/DAH
 
 static uint32_t ktimer;
 static int Key_state;
@@ -2225,7 +2240,7 @@ uint8_t delayWithKeySense(uint32_t ms){
 #ifdef CW_MESSAGE_EXT
 char cw_msg[6][48] = { "CQ PE1NNN +", "CQ CQ DE PE1NNN PE1NNN +", "GE TKS 5NN 5NN NAME IS GUIDO GUIDO HW?", "FB RPTR TX 5W 5W ANT INV V 73 CUAGN", "73 TU E E", "PE1NNN" };
 #else
-char cw_msg[1][48] = { "CQ PE1NNN +" };
+char cw_msg[1][48] = { "CQ VU3GWN +" };
 #endif
 uint8_t cw_msg_interval = 5; // number of seconds CW message is repeated
 uint32_t cw_msg_event = 0;
@@ -2464,11 +2479,11 @@ void dec2()
 #define F_ADC_CONV (192307/2)  //was 192307/1, but as noted this produces clicks in audio stream. Slower ADC clock cures this (but is a problem for VOX when sampling mic-input simulatanously).
 
 #ifdef FAST_AGC
-volatile uint8_t agc = 2;
+volatile uint8_t agc = 1;
 #else
 volatile uint8_t agc = 1;
 #endif
-volatile uint8_t nr = 0;
+volatile uint8_t nr = 2;
 volatile uint8_t att = 0;
 volatile uint8_t att2 = 2;  // Minimum att2 increased, to prevent numeric overflow on strong signals
 volatile uint8_t _init = 0;
@@ -2691,7 +2706,7 @@ inline int16_t filt_var(int16_t za0)  //filters build with www.micromodeler.com
     return zc0;
   } else { // for CW filters
     //   (2nd Order (SR=4465Hz) IIR in Direct Form I, 8x8:16), adding 64x front-gain (to deal with later division)
-//#define FILTER_700HZ   1
+
 #ifdef FILTER_700HZ
     if(cw_tone == 0){
       switch(filt){
@@ -3682,7 +3697,7 @@ volatile int16_t rit = 0;
 // We measure the average amplitude of the signal (see slow_dsp()) but the S-meter should be based on RMS value.
 // So we multiply by 0.707/0.639 in an attempt to roughly compensate, although that only really works if the input
 // is a sine wave
-uint8_t smode = 1;
+uint8_t smode = 2;
 uint32_t max_absavg256 = 0;
 int16_t dbm;
 
@@ -3919,7 +3934,7 @@ int16_t cal_iq_dummy = 0;
 // RX I/Q calibration procedure: terminate with 50 ohm, enable CW filter, adjust R27, R24, R17 subsequently to its minimum side-band rejection value in dB
 void calibrate_iq()
 {
-  smode = 1;
+  smode = 2;
   lcd.setCursor(0, 0); lcd_blanks(); lcd_blanks();
   digitalWrite(SIG_OUT, true); // loopback on
   si5351.freq(freq, 0, 90);  // RX in USB  
@@ -4052,7 +4067,7 @@ void show_banner(){
   const char* cap_label[] = { "SSB", "DSP", "SDR" };
   if(ssb_cap || dsp_cap){ lcd.print('-'); lcd.print(cap_label[dsp_cap]); }
 #else
-  lcd.print(F("uSDX"));
+  lcd.print(F("VU3GWN"));
 #endif //QCX
   lcd.print('\x01'); lcd_blanks(); lcd_blanks();
 }
@@ -4286,9 +4301,9 @@ int8_t paramAction(uint8_t action, uint8_t id = ALL)  // list of parameters
 #ifdef CW_DECODER
     case CWDEC:   paramAction(action, cwdec, 0x21, F("CW Decoder"), offon_label, 0, 1, false); break;
 #endif
-#ifdef FILTER_700HZ
+//#ifdef FILTER_700HZ
     case CWTONE:  if(dsp_cap) paramAction(action, cw_tone, 0x22, F("CW Tone"), cw_tone_label, 0, 1, false); break;
-#endif
+//#endif
 #ifdef QCX
     case CWOFF:   paramAction(action, cw_offset, 0x23, F("CW Offset"), NULL, 300, 2000, false); break;
 #endif
